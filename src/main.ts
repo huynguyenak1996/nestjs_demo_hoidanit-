@@ -7,7 +7,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get('PORT');
   if (!port) {
-    throw new ForbiddenException('Không tìm thấy port');
+    throw new Error('Không tìm thấy port');
   }
   await app.listen(port);
 }
