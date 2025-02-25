@@ -1,0 +1,26 @@
+version: '3.8'  # Phiên bản docker-compose file format (nên dùng 3.8 trở lên)
+
+services:
+  mongodb:
+    image: mongo:6.0.13  # Sử dụng phiên bản 6.0 (bạn có thể chỉ định bản patch cụ thể, ví dụ: 6.0.13)
+    container_name: mongodb-container # Đặt tên container để dễ quản lý
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root  # Tên người dùng root cho MongoDB
+      MONGO_INITDB_ROOT_PASSWORD: viotel@123 # Mật khẩu cho người dùng root (CẨN THẬN: Đổi mật khẩu này trong môi trường production!)
+    ports:
+    # - "27017:27017"   # Expose cổng 27017 của container ra ngoài host machine.
+      - "27018:27017"   # Host: 27018, Container: 27017 (Khuyến nghị)
+    volumes:
+      - mongodb_data_container:/data/db  # Mount volume để lưu trữ dữ liệu MongoDB, giúp dữ liệu không bị mất khi container bị xóa.
+    restart: unless-stopped  # Tự động khởi động lại container trừ khi bị dừng thủ công.  RẤT QUAN TRỌNG cho production.
+    # healthcheck: # (Tùy chọn nâng cao) Thêm healthcheck để kiểm tra tình trạng của MongoDB
+    #   test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+
+volumes:
+  mongodb_data_container:  # Định nghĩa named volume
+
+# Command để chạy (như trong ảnh):
+# docker compose -p hoidanit-mongodb-4rn up -d  (Hoặc docker-compose up -d nếu không muốn đặt tên project)
