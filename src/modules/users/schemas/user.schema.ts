@@ -1,6 +1,7 @@
 // src/users/schemas/user.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+
 export type UserDocument = HydratedDocument<User>;
 @Schema({ timestamps: true }) // Thêm timestamps: createdAt, updatedAt
 export class User {
@@ -8,14 +9,14 @@ export class User {
   username: string;
   @Prop({ required: true, unique: true }) // Email là bắt buộc và duy nhất
   email: string;
+  @Prop() // Số điện thoại (không bắt buộc)
+  phoneNumber?: string;
   @Prop({ required: true }) // Password là bắt buộc
   password: string;
   @Prop() // Tên đầu (không bắt buộc)
   firstName?: string;
   @Prop() // Tên cuối (không bắt buộc)
   lastName?: string;
-  @Prop() // Số điện thoại (không bắt buộc)
-  phoneNumber?: string;
   @Prop({
     type: {
       // Địa chỉ (object lồng - không bắt buộc)

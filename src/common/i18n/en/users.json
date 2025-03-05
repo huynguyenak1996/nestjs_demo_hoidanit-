@@ -1,0 +1,40 @@
+{
+  "success": {
+    "translation": "Success",
+    "reviewed": false
+  },
+  "UserNotFound": {
+    "translation": "User not found",
+    "reviewed": false
+  },
+  "CreateUserSuccessfully": {
+    "translation": "Create User Successfully",
+    "reviewed": false
+  },
+  "username_exists": {
+    "translation": "Username '{username}' already exists.",
+    "reviewed": false
+  },
+  "email_exists": {
+    "translation": "Email '{email}' already exists.",
+    "reviewed": false
+  },
+  "phone_exists": {
+    "translation": "Phone number '{phoneNumber}' already exists.",
+    "reviewed": false
+  },
+  "phone_email_exists": {
+    "translation": "Phone number & Email '{phoneNumber}' or '{email}' already exists.",
+    "reviewed": false
+  },
+  "create": {
+    "success": {
+      "translation": "User created successfully!",
+      "reviewed": false
+    },
+    "error": {
+      "translation": "Failed to create user: {error}",
+      "reviewed": false
+    }
+  }
+}

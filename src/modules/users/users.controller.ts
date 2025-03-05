@@ -1,31 +1,26 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Headers, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from '@/modules/users/schemas/user.schema';
+
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return await this.usersService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto, @Headers('x-custom-lang') lang: string) {
+    try {
+      return await this.usersService.create(createUserDto);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error; //Re-throw BadRequestException để trả về response với message lỗi
+      }
+      throw new BadRequestException(error);
+    }
   }
   @Get()
-  async findAll(
-    @Query() query: string,
-    @Query('current') current: string,
-    @Query('pageSize') pageSize: string,
-  ) {
-    return await this.usersService.findAll(query, +current, +pageSize);
+  async findAll(@Query() query: string, @Query('page') page: number, @Query('limit') limit: number) {
+    return await this.usersService.findAll(query, page, limit);
   }
   @Get(':id')
   async findOne(@Param('id') id: string) {

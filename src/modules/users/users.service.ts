@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpException,
   HttpStatus,
@@ -12,24 +13,29 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { hashPasswordUtils } from '@/common/utils/bcrypt';
 import { Model, Types } from 'mongoose';
-import aqp from 'api-query-params'; // Đảm bảo đã cài đặt: npm install api-query-params
+import aqp from 'api-query-params';
+import { I18nCustomService } from '@/common/i18n/i18n.service';
+
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    private readonly i18n: I18nCustomService,
+    @InjectModel(User.name) private userModel: Model<User>,
+  ) {}
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { username, email, password, phoneNumber } = createUserDto;
     // 1. Kiểm tra username, email, và phoneNumber đã tồn tại chưa
-    const existingUser = await this.userModel
-      .findOne({ $or: [{ username }, { email }, { phoneNumber }] })
-      .exec();
+    const existingUser = await this.userModel.findOne({ $or: [{ username }, { email }, { phoneNumber }] }).exec();
     if (existingUser) {
       if (existingUser.username === username) {
-        throw new ConflictException(`Username '${username}' already exists.`);
+        throw new BadRequestException(this.i18n.translate('users.username_exists.translation', { args: { username } }));
       } else if (existingUser.email === email) {
-        throw new ConflictException(`Email '${email}' already exists.`);
+        throw new BadRequestException(this.i18n.translate('users.email_exists.translation', { args: { email } }));
+      } else if (existingUser.phoneNumber === phoneNumber) {
+        throw new BadRequestException(this.i18n.translate('users.phone_exists.translation', { args: { phoneNumber } }));
       } else {
-        throw new ConflictException(
-          `Phone number '${phoneNumber}' already exists.`,
+        throw new BadRequestException(
+          this.i18n.translate('users.phone_email_exists.translation', { args: [email, phoneNumber] }),
         );
       }
     }
@@ -37,34 +43,47 @@ export class UsersService {
     const hashPassword = await hashPasswordUtils(password);
     // 3. Tạo user
     try {
-      const createdUser = new this.userModel({
-        ...createUserDto,
-        password: hashPassword,
-      });
+      const createdUser = new this.userModel({ ...createUserDto, password: hashPassword });
       await createdUser.save();
-      createdUser.set('password', undefined); // Thay vì delete, set thành undefined
+      createdUser.set('password', undefined);
       return createdUser.toObject({ versionKey: false });
     } catch (error) {
       console.error('Error save user', error);
       throw new InternalServerErrorException('Failed to create user.');
     }
   }
-  async findAll(query: string, current: number, pageSize: number) {
-    const { filter, sort } = aqp(query);
-    if (filter.current) delete filter.current;
-    if (filter.pageSize) delete filter.pageSize;
-    if (!current) current = 1;
-    if (!pageSize) pageSize = 10;
-    const totalItems = (await this.userModel.find(filter)).length;
+  async findAll(query: string, page: number, limit: number) {
+    const { filter, sort, population, projection } = aqp(query); // Lấy tất cả các tham số
+    // Loại bỏ current và pageSize từ filter, vì chúng ta xử lý riêng
+    delete filter.page;
+    delete filter.limit;
+    // Validate and set default values for page and limit
+    const currentPage = Math.max(1, page); // Đảm bảo page >= 1
+    const pageSize = Math.max(1, limit); // Đảm bảo limit >= 1
+    const skip = (currentPage - 1) * pageSize;
+    const [results, totalItems] = await Promise.all([
+      this.userModel
+        .find(filter)
+        .limit(pageSize)
+        .skip(skip)
+        .sort(sort as any)
+        .select(projection) // Áp dụng projection (chọn các trường)
+        .populate(population) // Nếu có yêu cầu populate (nếu dùng relationship)
+        .exec(), // Thêm .exec() để thực thi query
+      this.userModel.countDocuments(filter).exec(),
+    ]);
     const totalPages = Math.ceil(totalItems / pageSize);
-    const skip = (current - 1) * pageSize;
-    const results = await this.userModel
-      .find(filter)
-      .limit(pageSize)
-      .skip(skip)
-      .select('-password')
-      .sort(sort as any);
-    return { results, totalItems, totalPages };
+    return {
+      data: results,
+      metadata: {
+        pagination: {
+          total: totalItems,
+          page: currentPage,
+          limit: pageSize,
+          totalPages,
+        },
+      },
+    };
   }
   async findOne(id: string): Promise<User> {
     if (!Types.ObjectId.isValid(id)) {
@@ -72,10 +91,7 @@ export class UsersService {
     }
     const user = await this.userModel.findById(id).exec(); // Thêm .exec() để rõ ràng hơn
     if (!user) {
-      throw new HttpException(
-        `User with id ${id} not found`,
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException(`User with id ${id} not found`, HttpStatus.NOT_FOUND);
     }
     return user;
   }

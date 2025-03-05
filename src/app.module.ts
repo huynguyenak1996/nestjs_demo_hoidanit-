@@ -5,6 +5,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CommonI18nModule } from '@/common/i18n/i18n.module';
+import { TranslationModule } from './modules/translation/translation.module';
+import { TestModule } from './modules/test/test.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -14,6 +18,9 @@ import { MongooseModule } from '@nestjs/mongoose';
       // load: [appConfig], // Đường dẫn đến file .env (mặc định là .env)
       // Bạn có thể thêm validationSchema ở đây (sử dụng Joi) để kiểm tra các biến môi trường
     }),
+    CommonI18nModule, // Import module i18n
+    TranslationModule,
+    TestModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule], // Import ConfigModule để có thể inject ConfigService (Module ConfigModule để inject ConfigService)
       useFactory: (configService: ConfigService) => {
@@ -45,6 +52,8 @@ import { MongooseModule } from '@nestjs/mongoose';
     }),
     UsersModule,
     RolesModule,
+    TranslationModule,
+    TestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

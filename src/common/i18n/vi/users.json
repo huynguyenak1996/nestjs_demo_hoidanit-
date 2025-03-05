@@ -1,0 +1,24 @@
+{
+  "username_exists": {
+    "translation": "Tên người dùng '{username}' đã tồn tại.",
+    "reviewed": false
+  },
+  "email_exists": {
+    "translation": "Email '{email}' đã tồn tại.",
+    "reviewed": false
+  },
+  "phone_exists": {
+    "translation": "Số điện thoại '{phoneNumber}' đã tồn tại.",
+    "reviewed": false
+  },
+  "create": {
+    "success": {
+      "translation": "Tạo người dùng thành công!",
+      "reviewed": false
+    },
+    "error": {
+      "translation": "Không thể tạo người dùng: {error}",
+      "reviewed": false
+    }
+  }
+}
