@@ -1,15 +1,15 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { AddressDto, CreateUserDto } from './create-user.dto';
 import { IsEmail, IsMongoId, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
 import { IsValidPhoneNumber } from '@/common/decorators/is-valid-phone-number.decorator';
 import { Type } from 'class-transformer';
+import { AddressDto } from '@/modules/users/dto/create-user.dto';
 
 export class UpdateUserDto {
-  @IsMongoId({ message: '_id Không hợp lệ' })
-  @IsNotEmpty({ message: '_id không được để trống' })
+  // @IsMongoId({ message: this.i18n.translate('users.username_exists.translation') })
+  @IsMongoId({ message: 'users.username_exists.translation' })
+  @IsNotEmpty()
   _id: string;
   @IsString()
-  @IsNotEmpty({ message: 'username không được để trống' })
+  @IsNotEmpty()
   @MinLength(3)
   username: string;
   @IsEmail() @IsNotEmpty() email: string;

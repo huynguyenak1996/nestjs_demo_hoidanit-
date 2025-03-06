@@ -1,4 +1,28 @@
 {
+  "idNotEmpty": {
+    "translation": "_id should not be empty",
+    "reviewed": false
+  },
+  "idNotMongodbId": {
+    "translation": "_id must be a mongodb id",
+    "reviewed": false
+  },
+  "usernameLongerEqual6Characters": {
+    "translation": "username must be longer than or equal to 6 characters",
+    "reviewed": false
+  },
+  "usernameString": {
+    "translation": "Username must be a string",
+    "reviewed": false
+  },
+  "emailNotEmpty": {
+    "translation": "Email should not be empty",
+    "reviewed": false
+  },
+  "emailInvalid": {
+    "translation": "Invalid email",
+    "reviewed": false
+  },
   "success": {
     "translation": "Success",
     "reviewed": false
