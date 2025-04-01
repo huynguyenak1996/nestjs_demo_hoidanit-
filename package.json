@@ -38,6 +38,7 @@
     "class-transformer": "0.5.1",
     "class-validator": "0.14.1",
     "fs-extra": "11.3.0",
+    "moment-timezone": "^0.5.47",
     "mongoose": "8.10.1",
     "nestjs-i18n": "10.5.0",
     "reflect-metadata": "0.2.2",

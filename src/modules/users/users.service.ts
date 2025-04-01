@@ -15,6 +15,7 @@ import { hashPasswordUtils } from '@/common/utils/bcrypt';
 import { Model, Types } from 'mongoose';
 import aqp from 'api-query-params';
 import { I18nCustomService } from '@/common/i18n/i18n.service';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class UsersService {
@@ -95,8 +96,48 @@ export class UsersService {
     }
     return user;
   }
-  update(updateUserDto: UpdateUserDto) {
-    return `This action updates a #${updateUserDto._id} user`;
+  async update(updateUserDto: UpdateUserDto): Promise<User> {
+    // 1. Kiểm tra xem có ID trong DTO không.  Nếu không có, không thể xác định user để update.
+    if (!updateUserDto._id) {
+      throw new BadRequestException('Thiếu ID người dùng.');
+    }
+    // 2. Tìm user theo ID.  Sử dụng findById để tìm.
+    const existingUser = await this.userModel.findById(updateUserDto._id).exec();
+    // 3. Nếu không tìm thấy user, ném lỗi NotFoundException.
+    if (!existingUser) {
+      throw new NotFoundException(`Không tìm thấy người dùng với ID: ${updateUserDto._id}`);
+    }
+    // Cập nhật thông tin (sau khi đã kiểm tra)
+    for (const key in updateUserDto) {
+      if (Object.prototype.hasOwnProperty.call(updateUserDto, key) && updateUserDto[key] !== undefined) {
+        if (key === 'password') {
+          existingUser[key] = await hashPasswordUtils(updateUserDto.password);
+        } else {
+          existingUser[key] = updateUserDto[key];
+        }
+      }
+    }
+    const result = await this.userModel
+      .updateOne(
+        {
+          _id: updateUserDto._id,
+          $or: [
+            { username: { $ne: updateUserDto.username || '' } }, // $ne: not equal
+            { email: { $ne: updateUserDto.email || '' } },
+            { phoneNumber: { $ne: updateUserDto.phoneNumber || '' } },
+          ],
+        },
+        { $set: existingUser },
+        { runValidators: true }, // Đảm bảo validation của schema vẫn được chạy
+      )
+      .exec();
+    const now = new Date();
+    console.log(now);
+    if (result.matchedCount === 0) {
+      throw new ConflictException('Thông tin người dùng đã tồn tại hoặc không tìm thấy người dùng.');
+    }
+    const updatedUser = await existingUser.save();
+    return updatedUser;
   }
   remove(id: number) {
     return `This action removes a #${id} user`;

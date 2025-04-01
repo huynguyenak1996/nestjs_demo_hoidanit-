@@ -27,8 +27,8 @@ export class UsersController {
     return await this.usersService.findOne(id);
   }
   @Patch()
-  update(@Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(updateUserDto);
+  async update(@Body() updateUserDto: UpdateUserDto) {
+    return await this.usersService.update(updateUserDto);
   }
   @Delete(':id')
   remove(@Param('id') id: string) {

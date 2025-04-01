@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import { InternalServerErrorException } from '@nestjs/common';
-const saltRounds = 10;
+const saltRounds = 10; // Hoặc lấy từ config
 export const hashPasswordUtils = async (password: string) => {
   try {
     return await bcrypt.hash(password, saltRounds);

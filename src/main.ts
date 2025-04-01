@@ -1,10 +1,12 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as moment from 'moment-timezone';
 import { ConfigService } from '@nestjs/config';
 import { ForbiddenException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from '@/common/filters/http-exception.filter';
 
 async function bootstrap() {
+  moment.tz.setDefault('Asia/Ho_Chi_Minh'); // Đặt múi giờ mặc định
   const app = await NestFactory.create(AppModule);
   const reflector = app.get(Reflector);
   const configService = app.get(ConfigService);
